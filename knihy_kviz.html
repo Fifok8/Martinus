@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ktorú knihu si prečítaš? - Martinus Kvíz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #f8f8f8 0%, #ffffff 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #1a1a1a;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .stage {
+            padding: 3rem 2rem;
+            display: none;
+            animation: fadeIn 0.4s ease-in;
+        }
+
+        .stage.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header-emoji {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #d32f2f;
+        }
+
+        h2 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #d32f2f;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .progress-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .progress-segment {
+            flex: 1;
+            height: 4px;
+            background: #ddd;
+            border-radius: 2px;
+            transition: background 0.3s;
+        }
+
+        .progress-segment.active {
+            background: #d32f2f;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        button {
+            padding: 16px;
+            font-size: 16px;
+            border: 1px solid #d32f2f;
+            border-radius: 12px;
+            background: #fafafa;
+            color: #1a1a1a;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        button:hover {
+            background: #fff3e0;
+            border-color: #c62828;
+            transform: translateX(4px);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .primary-button {
+            background: #d32f2f;
+            color: white;
+            border-color: #c62828;
+            margin-top: 1rem;
+        }
+
+        .primary-button:hover {
+            background: #c62828;
+        }
+
+        .book-card {
+            background: #fafafa;
+            border: 1px solid #e0d5c7;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 12px;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            transition: all 0.2s;
+        }
+
+        .book-card:hover {
+            border-color: #d32f2f;
+            box-shadow: 0 4px 16px rgba(211, 47, 47, 0.1);
+        }
+
+        .book-emoji {
+            font-size: 3rem;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .book-info h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2c2c2c;
+            margin-bottom: 4px;
+        }
+
+        .book-info p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .book-link {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #d32f2f;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .book-link:hover {
+            background: #c62828;
+            transform: translateY(-2px);
+        }
+
+        .reset-button {
+            width: 100%;
+            margin-top: 2rem;
+            background: #ffebee;
+            border-color: #d32f2f;
+        }
+
+        .reset-button:hover {
+            background: #d32f2f;
+            color: white;
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .results-emoji {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- START STAGE -->
+        <div id="stage-start" class="stage active">
+            <div class="header">
+                <span class="header-emoji">📚</span>
+                <h1>Ktorú knihu si prečítaš?</h1>
+            </div>
+            <p class="subtitle">
+                Odpovedz na pár otázok a my ti odporúčame perfektnú knihu z Martinus.sk. Prispôsobujeme ti výbery podľa tvojej nálady, preferovaného žánru a času, ktorý máš na čítanie.
+            </p>
+            <button class="primary-button" onclick="startQuiz()">Spustiť kvíz →</button>
+        </div>
+
+        <!-- QUIZ STAGE -->
+        <div id="stage-quiz" class="stage">
+            <div class="progress-bar" id="progress-bar"></div>
+            
+            <!-- Question 1 -->
+            <div id="q1" class="question active">
+                <h2>Aká je tvoja nálada? 🎭</h2>
+                <div class="button-group">
+                    <button onclick="answer('nalada', 'Romance')">Romantická 💕</button>
+                    <button onclick="answer('nalada', 'Zabavy')">Zábavná 😄</button>
+                    <button onclick="answer('nalada', 'Tema')">Temná/Napätá 🌑</button>
+                    <button onclick="answer('nalada', 'Avantura')">Pokojná a odpočívajúca 🌿</button>
+                </div>
+            </div>
+
+            <!-- Question 2 -->
+            <div id="q2" class="question">
+                <h2>Aký žáner preferuješ? 📖</h2>
+                <div class="button-group">
+                    <button onclick="answer('zanr', 'Romance')">Romance 💕</button>
+                    <button onclick="answer('zanr', 'Fantasy')">Fantasy 🧙‍♂️</button>
+                    <button onclick="answer('zanr', 'Detektiv')">Detektívka 🔍</button>
+                    <button onclick="answer('zanr', 'SciFi')">Sci-Fi 🚀</button>
+                    <button onclick="answer('zanr', 'Avantura')">Akčná a plná napätia ⚡</button>
+                </div>
+            </div>
+
+            <!-- Question 3 -->
+            <div id="q3" class="question">
+                <h2>Ako dlhá má byť kniha? 📏</h2>
+                <div class="button-group">
+                    <button onclick="answer('dlzka', 'krátka')">Krátka (do 300 strán) 📗</button>
+                    <button onclick="answer('dlzka', 'dlha')">Dlhá (viac ako 400 strán) 📕</button>
+                </div>
+            </div>
+
+            <!-- Question 4 -->
+            <div id="q4" class="question">
+                <h2>Ako rýchlo čítaš? ⚡</h2>
+                <div class="button-group">
+                    <button onclick="answer('tempo', 'pomaly')">Pomaly - chcem sa ponoriť do príbehu 🌊</button>
+                    <button onclick="answer('tempo', 'rychlo')">Rýchlo - chcem dynamiku a napätie 🔥</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESULTS STAGE -->
+        <div id="stage-results" class="stage">
+            <div class="results-header">
+                <div class="results-emoji">✨</div>
+                <h1>Tvoje odporúčania</h1>
+                <p class="subtitle">Na základe tvojich preferencií</p>
+            </div>
+            <div id="recommendations"></div>
+            <button class="reset-button" onclick="resetQuiz()">Spustiť kvíz znova</button>
+        </div>
+    </div>
+
+    <script>
+        const answers = {
+            nalada: null,
+            zanr: null,
+            dlzka: null,
+            tempo: null
+        };
+
+        const knihy = {
+            'Romance-krátka-pomaly': [
+                { title: 'Sedem rokov spolu', author: 'Marta Gavaldová', pages: 192, emoji: '📖' },
+                { title: 'Láska na Vianoce', author: 'Richard Paul Evans', pages: 280, emoji: '💕' }
+            ],
+            'Romance-krátka-rychlo': [
+                { title: 'Západ slnka v Paríži', author: 'Agnès Martin-Lugand', pages: 320, emoji: '✨' },
+                { title: 'Sedem dní', author: 'Lucy Foley', pages: 298, emoji: '💋' }
+            ],
+            'Romance-dlha-pomaly': [
+                { title: 'Pridavač duše', author: 'Nora Roberts', pages: 456, emoji: '💗' },
+                { title: 'Rok v Provence', author: 'Peter Mayle', pages: 512, emoji: '🌸' }
+            ],
+            'Romance-dlha-rychlo': [
+                { title: 'Len tvoj', author: 'Colleen Hoover', pages: 384, emoji: '💔' },
+                { title: 'Mrežanka', author: 'Daphne du Maurier', pages: 461, emoji: '🌹' }
+            ],
+            'Fantasy-krátka-pomaly': [
+                { title: 'Hranice', author: 'Naomi Novik', pages: 312, emoji: '⚔️' },
+                { title: 'Muž s železným srdcom', author: 'John Flanagan', pages: 287, emoji: '🧙' }
+            ],
+            'Fantasy-krátka-rychlo': [
+                { title: 'Percy Jackson a zlodeji', author: 'Rick Riordan', pages: 389, emoji: '⚡' },
+                { title: 'Hlasná hviezda', author: 'Roshani Chokshi', pages: 342, emoji: '✨' }
+            ],
+            'Fantasy-dlha-pomaly': [
+                { title: 'Koleso času', author: 'Robert Jordan', pages: 789, emoji: '🌀' },
+                { title: 'Pán prsteňov', author: 'J.R.R. Tolkien', pages: 532, emoji: '💍' }
+            ],
+            'Fantasy-dlha-rychlo': [
+                { title: 'Meč pravdy', author: 'Terry Goodkind', pages: 542, emoji: '🗡️' },
+                { title: 'Draci z zimy', author: 'George R.R. Martin', pages: 694, emoji: '🐉' }
+            ],
+            'Detektiv-krátka-pomaly': [
+                { title: 'Päť maličkostí', author: 'Anthony Horowitz', pages: 235, emoji: '🔍' },
+                { title: 'Šachmatista', author: 'Stefan Zweig', pages: 198, emoji: '🎯' }
+            ],
+            'Detektiv-krátka-rychlo': [
+                { title: 'Čím bola zavretá dvere', author: 'Agatha Christie', pages: 256, emoji: '🔐' },
+                { title: 'Najkratšia záhada', author: 'Arthur Conan Doyle', pages: 189, emoji: '📍' }
+            ],
+            'Detektiv-dlha-pomaly': [
+                { title: 'Muž bez nádeje', author: 'Pierre Lemaitre', pages: 498, emoji: '🕵️' },
+                { title: 'Všetci v jednom dome', author: 'Agatha Christie', pages: 456, emoji: '🏠' }
+            ],
+            'Detektiv-dlha-rychlo': [
+                { title: 'Hlava mŕtveho muža', author: 'Isaac Asimov', pages: 412, emoji: '💀' },
+                { title: 'Záhada na Mandarínke', author: 'Keigo Higashino', pages: 467, emoji: '🍊' }
+            ],
+            'SciFi-krátka-pomaly': [
+                { title: 'Marťan', author: 'Andy Weir', pages: 369, emoji: '🚀' },
+                { title: 'Zvuk hromu', author: 'Ray Bradbury', pages: 287, emoji: '⚡' }
+            ],
+            'SciFi-krátka-rychlo': [
+                { title: 'Zariadenie Návratech', author: 'Andy Weir', pages: 303, emoji: '🛸' },
+                { title: 'Projekcia', author: 'Blake Crouch', pages: 334, emoji: '🌌' }
+            ],
+            'SciFi-dlha-pomaly': [
+                { title: 'Návrat Jediov', author: 'Timothy Zahn', pages: 512, emoji: '🌌' },
+                { title: 'Fond', author: 'Isaac Asimov', pages: 568, emoji: '🔬' }
+            ],
+            'SciFi-dlha-rychlo': [
+                { title: 'Slnečný kráľ', author: 'Stephen King', pages: 645, emoji: '☀️' },
+                { title: 'Neuromancer', author: 'William Gibson', pages: 511, emoji: '💻' }
+            ],
+            'Avantura-krátka-pomaly': [
+                { title: 'Ostrov pokladov', author: 'Robert Louis Stevenson', pages: 247, emoji: '🏴‍☠️' },
+                { title: 'Dve roky dovolené', author: 'Jules Verne', pages: 314, emoji: '🗺️' }
+            ],
+            'Avantura-krátka-rychlo': [
+                { title: 'Cestu do stredu zeme', author: 'Jules Verne', pages: 289, emoji: '🌋' },
+                { title: 'Tajný závrty', author: 'Frances Hodgson Burnett', pages: 256, emoji: '🌿' }
+            ],
+            'Avantura-dlha-pomaly': [
+                { title: 'Tri mušketieri', author: 'Alexandre Dumas', pages: 612, emoji: '⚔️' },
+                { title: 'Počítanie Montecrista', author: 'Alexandre Dumas', pages: 462, emoji: '💎' }
+            ],
+            'Avantura-dlha-rychlo': [
+                { title: 'Dvadsať tisíc ligí pod morom', author: 'Jules Verne', pages: 521, emoji: '🌊' },
+                { title: 'Rozbúrené výšiny', author: 'Emily Brontë', pages: 489, emoji: '⛈️' }
+            ]
+        };
+
+        function startQuiz() {
+            switchStage('quiz');
+            updateProgress();
+        }
+
+        function answer(field, value) {
+            answers[field] = value;
+            updateProgress();
+            
+            if (field === 'tempo') {
+                setTimeout(showResults, 300);
+            } else {
+                const questionIndex = { nalada: 1, zanr: 2, dlzka: 3, tempo: 4 }[field];
+                for (let i = 1; i <= 4; i++) {
+                    document.getElementById(`q${i}`)?.classList.toggle('active', i === questionIndex + 1);
+                }
+            }
+        }
+
+        function updateProgress() {
+            const progressBar = document.getElementById('progress-bar');
+            progressBar.innerHTML = '';
+            let filled = Object.values(answers).filter(v => v !== null).length;
+            
+            for (let i = 1; i <= 4; i++) {
+                const segment = document.createElement('div');
+                segment.className = 'progress-segment' + (i <= filled ? ' active' : '');
+                progressBar.appendChild(segment);
+            }
+        }
+
+        function showResults() {
+            const key = `${answers.zanr}-${answers.dlzka}-${answers.tempo}`;
+            const recommendations = knihy[key] || Object.values(knihy)[0];
+            
+            let html = '';
+            recommendations.forEach(book => {
+                html += `
+                    <div class="book-card">
+                        <div class="book-emoji">${book.emoji}</div>
+                        <div class="book-info">
+                            <h3>${book.title}</h3>
+                            <p>${book.author} • ${book.pages} strán</p>
+                            <a href="https://www.martinus.sk" target="_blank" class="book-link">
+                                Pozrieť na Martinus.sk →
+                            </a>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('recommendations').innerHTML = html;
+            switchStage('results');
+        }
+
+        function resetQuiz() {
+            answers.nalada = null;
+            answers.zanr = null;
+            answers.dlzka = null;
+            answers.tempo = null;
+            
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById(`q${i}`)?.classList.toggle('active', i === 1);
+            }
+            
+            switchStage('start');
+        }
+
+        function switchStage(stage) {
+            document.querySelectorAll('.stage').forEach(el => el.classList.remove('active'));
+            document.getElementById(`stage-${stage}`).classList.add('active');
+        }
+    </script>
+</body>
+</html>
