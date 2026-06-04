@@ -99,6 +99,7 @@
             gap: 12px;
         }
 
+        /* --- ANIMÁCIE PRE BUTTONY --- */
         button {
             padding: 16px;
             font-size: 16px;
@@ -107,31 +108,107 @@
             background: #fafafa;
             color: #1a1a1a;
             cursor: pointer;
-            transition: all 0.2s;
+            /* Plynulejší prechod s cubic-bezier pre prémiový pocit */
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             text-align: left;
             font-weight: 500;
+            position: relative;
         }
 
         button:hover {
             background: #fff3e0;
             border-color: #c62828;
-            transform: translateX(4px);
+            /* Pridané mierne zväčšenie okrem posunu do boku */
+            transform: translateX(6px) scale(1.01);
+            /* Elegantný tieň pri hoveri */
+            box-shadow: 0 4px 12px rgba(211, 47, 47, 0.12);
         }
 
         button:active {
-            transform: scale(0.98);
+            /* Výraznejšie a rýchlejšie zatlačenie tlačidla */
+            transform: scale(0.97) translateX(3px);
+            box-shadow: 0 2px 4px rgba(211, 47, 47, 0.06);
+            transition: transform 0.05s;
         }
 
         .primary-button {
+            width: 100%;
+            text-align: center;
             background: #d32f2f;
             color: white;
             border-color: #c62828;
             margin-top: 1rem;
+            /* Pulzujúca animácia, ktorá láka na kliknutie */
+            animation: pulseGlow 2s infinite ease-in-out;
         }
 
         .primary-button:hover {
             background: #c62828;
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(211, 47, 47, 0.3);
         }
+        
+        .primary-button:active {
+            transform: scale(0.98);
+        }
+
+        /* Pulzujúci efekt pre hlavné tlačidlo */
+        @keyframes pulseGlow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 12px rgba(211, 47, 47, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(211, 47, 47, 0);
+            }
+        }
+
+        .reset-button {
+            width: 100%;
+            margin-top: 2rem;
+            background: #ffebee;
+            border-color: #d32f2f;
+            text-align: center;
+        }
+
+        .reset-button:hover {
+            background: #d32f2f;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(211, 47, 47, 0.15);
+        }
+        
+        .reset-button:active {
+            transform: scale(0.98);
+        }
+
+        /* Tlačidlo priamo v odkaze knihy */
+        .book-link {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #d32f2f;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border: none;
+            cursor: pointer;
+        }
+
+        .book-link:hover {
+            background: #c62828;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(211, 47, 47, 0.25);
+        }
+
+        .book-link:active {
+            transform: translateY(0) scale(0.96);
+        }
+        /* --- KONIEC ANIMÁCIÍ --- */
 
         .book-card {
             background: #fafafa;
@@ -169,37 +246,6 @@
             margin-bottom: 8px;
         }
 
-        .book-link {
-            display: inline-block;
-            padding: 8px 16px;
-            background: #d32f2f;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.2s;
-            border: none;
-            cursor: pointer;
-        }
-
-        .book-link:hover {
-            background: #c62828;
-            transform: translateY(-2px);
-        }
-
-        .reset-button {
-            width: 100%;
-            margin-top: 2rem;
-            background: #ffebee;
-            border-color: #d32f2f;
-        }
-
-        .reset-button:hover {
-            background: #d32f2f;
-            color: white;
-        }
-
         .results-header {
             text-align: center;
             margin-bottom: 2rem;
@@ -213,7 +259,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- START STAGE -->
         <div id="stage-start" class="stage active">
             <div class="header">
                 <span class="header-emoji">📚</span>
@@ -225,11 +270,9 @@
             <button class="primary-button" onclick="startQuiz()">Spustiť kvíz →</button>
         </div>
 
-        <!-- QUIZ STAGE -->
         <div id="stage-quiz" class="stage">
             <div class="progress-bar" id="progress-bar"></div>
             
-            <!-- Question 1 -->
             <div id="q1" class="question active">
                 <h2>Aká je tvoja nálada? 🎭</h2>
                 <div class="button-group">
@@ -240,7 +283,6 @@
                 </div>
             </div>
 
-            <!-- Question 2 -->
             <div id="q2" class="question">
                 <h2>Aký žáner preferuješ? 📖</h2>
                 <div class="button-group">
@@ -252,16 +294,14 @@
                 </div>
             </div>
 
-            <!-- Question 3 -->
             <div id="q3" class="question">
                 <h2>Ako dlhá má byť kniha? 📏</h2>
                 <div class="button-group">
                     <button onclick="answer('dlzka', 'krátka')">Krátka (do 300 strán) 📗</button>
-                    <button onclick="answer('dlzka', 'dlha')">Dlhá (viac ako 400 strán) 📕</button>
+                    <button onclick="answer('dlzka', 'dlha')">Dlha (viac ako 400 strán) 📕</button>
                 </div>
             </div>
 
-            <!-- Question 4 -->
             <div id="q4" class="question">
                 <h2>Ako rýchlo čítaš? ⚡</h2>
                 <div class="button-group">
@@ -271,7 +311,6 @@
             </div>
         </div>
 
-        <!-- RESULTS STAGE -->
         <div id="stage-results" class="stage">
             <div class="results-header">
                 <div class="results-emoji">✨</div>
@@ -338,7 +377,7 @@
             ],
             'Detektiv-dlha-rychlo': [
                 { title: 'Oceľové jaskyne', author: 'Isaac Asimov', pages: 412, emoji: '💀', url: 'https://www.martinus.sk/831327-ocelove-jaskyne/kniha'},
-                { title: 'ZThe Keeper of the Camphor Tree', author: 'Keigo Higashino', pages: 467, emoji: '🍊', url: 'https://www.martinus.sk/3914637-the-keeper-of-the-camphor-tree/kniha' }
+                { title: 'The Keeper of the Camphor Tree', author: 'Keigo Higashino', pages: 467, emoji: '🍊', url: 'https://www.martinus.sk/3914637-the-keeper-of-the-camphor-tree/kniha' }
             ],
             'SciFi-krátka-pomaly': [
                 { title: 'Marťan', author: 'Andy Weir', pages: 369, emoji: '🚀', url: 'https://www.martinus.sk/666699-martan/kniha' },
