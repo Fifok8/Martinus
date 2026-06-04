@@ -99,7 +99,7 @@
             gap: 12px;
         }
 
-        /* --- ANIMÁCIE PRE BUTTONY --- */
+        /* --- STYLY A ANIMÁCIE PRE BUTTONY --- */
         button {
             padding: 16px;
             font-size: 16px;
@@ -108,7 +108,6 @@
             background: #fafafa;
             color: #1a1a1a;
             cursor: pointer;
-            /* Plynulejší prechod s cubic-bezier pre prémiový pocit */
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             text-align: left;
             font-weight: 500;
@@ -118,17 +117,24 @@
         button:hover {
             background: #fff3e0;
             border-color: #c62828;
-            /* Pridané mierne zväčšenie okrem posunu do boku */
             transform: translateX(6px) scale(1.01);
-            /* Elegantný tieň pri hoveri */
             box-shadow: 0 4px 12px rgba(211, 47, 47, 0.12);
         }
 
         button:active {
-            /* Výraznejšie a rýchlejšie zatlačenie tlačidla */
             transform: scale(0.97) translateX(3px);
             box-shadow: 0 2px 4px rgba(211, 47, 47, 0.06);
             transition: transform 0.05s;
+        }
+
+        /* Nový štýl pre vysvietený (vybratý) button */
+        button.selected {
+            background: #ffebee !important;
+            border-color: #d32f2f !important;
+            color: #d32f2f !important;
+            font-weight: 700 !important;
+            transform: translateX(4px);
+            box-shadow: inset 4px 0 0 #d32f2f, 0 4px 12px rgba(211, 47, 47, 0.15);
         }
 
         .primary-button {
@@ -138,7 +144,6 @@
             color: white;
             border-color: #c62828;
             margin-top: 1rem;
-            /* Pulzujúca animácia, ktorá láka na kliknutie */
             animation: pulseGlow 2s infinite ease-in-out;
         }
 
@@ -152,17 +157,10 @@
             transform: scale(0.98);
         }
 
-        /* Pulzujúci efekt pre hlavné tlačidlo */
         @keyframes pulseGlow {
-            0% {
-                box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.4);
-            }
-            70% {
-                box-shadow: 0 0 0 12px rgba(211, 47, 47, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(211, 47, 47, 0);
-            }
+            0% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.4); }
+            70% { box-shadow: 0 0 0 12px rgba(211, 47, 47, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); }
         }
 
         .reset-button {
@@ -184,7 +182,6 @@
             transform: scale(0.98);
         }
 
-        /* Tlačidlo priamo v odkaze knihy */
         .book-link {
             display: inline-block;
             padding: 8px 16px;
@@ -208,7 +205,6 @@
         .book-link:active {
             transform: translateY(0) scale(0.96);
         }
-        /* --- KONIEC ANIMÁCIÍ --- */
 
         .book-card {
             background: #fafafa;
@@ -298,7 +294,7 @@
                 <h2>Ako dlhá má byť kniha? 📏</h2>
                 <div class="button-group">
                     <button onclick="answer('dlzka', 'krátka')">Krátka (do 300 strán) 📗</button>
-                    <button onclick="answer('dlzka', 'dlha')">Dlha (viac ako 400 strán) 📕</button>
+                    <button onclick="answer('dlzka', 'dlha')">Dlhá (viac ako 400 strán) 📕</button>
                 </div>
             </div>
 
@@ -377,7 +373,7 @@
             ],
             'Detektiv-dlha-rychlo': [
                 { title: 'Oceľové jaskyne', author: 'Isaac Asimov', pages: 412, emoji: '💀', url: 'https://www.martinus.sk/831327-ocelove-jaskyne/kniha'},
-                { title: 'The Keeper of the Camphor Tree', author: 'Keigo Higashino', pages: 467, emoji: '🍊', url: 'https://www.martinus.sk/3914637-the-keeper-of-the-camphor-tree/kniha' }
+                { title: 'ZThe Keeper of the Camphor Tree', author: 'Keigo Higashino', pages: 467, emoji: '🍊', url: 'https://www.martinus.sk/3914637-the-keeper-of-the-camphor-tree/kniha' }
             ],
             'SciFi-krátka-pomaly': [
                 { title: 'Marťan', author: 'Andy Weir', pages: 369, emoji: '🚀', url: 'https://www.martinus.sk/666699-martan/kniha' },
@@ -420,15 +416,27 @@
 
         function answer(field, value) {
             answers[field] = value;
+            
+            // LOGIKA PRE VYSVIETENIE: Nájde kliknutý button a pridá mu triedu .selected
+            const clickedBtn = document.querySelector(`button[onclick="answer('${field}', '${value}')"]`);
+            if (clickedBtn) {
+                const siblings = clickedBtn.closest('.button-group').querySelectorAll('button');
+                siblings.forEach(btn => btn.classList.remove('selected'));
+                clickedBtn.classList.add('selected');
+            }
+
             updateProgress();
             
             if (field === 'tempo') {
                 setTimeout(showResults, 300);
             } else {
                 const questionIndex = { nalada: 1, zanr: 2, dlzka: 3, tempo: 4 }[field];
-                for (let i = 1; i <= 4; i++) {
-                    document.getElementById(`q${i}`)?.classList.toggle('active', i === questionIndex + 1);
-                }
+                // Pridané malé oneskorenie prechodu, aby si používateľ stihol všimnúť vysvietenie tlačidla
+                setTimeout(() => {
+                    for (let i = 1; i <= 4; i++) {
+                        document.getElementById(`q${i}`)?.classList.toggle('active', i === questionIndex + 1);
+                    }
+                }, 200);
             }
         }
 
@@ -473,6 +481,9 @@
             answers.zanr = null;
             answers.dlzka = null;
             answers.tempo = null;
+            
+            // VYMAZANIE VYSVIETENIA: Resetuje vybraté štýly tlačidiel na pôvodné
+            document.querySelectorAll('.button-group button').forEach(btn => btn.classList.remove('selected'));
             
             for (let i = 1; i <= 4; i++) {
                 document.getElementById(`q${i}`)?.classList.toggle('active', i === 1);
