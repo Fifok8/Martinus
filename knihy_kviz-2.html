@@ -99,7 +99,40 @@
             gap: 12px;
         }
 
-        /* --- STYLY A ANIMÁCIE PRE BUTTONY --- */
+        /* --- POSTUPNÉ ZOBRAZOVANIE OTÁZOK V RAMCI KVÍZU --- */
+        .question {
+            margin-bottom: 2.5rem;
+            opacity: 0.15; /* Ešte nenačítané otázky sú takmer neviditeľné */
+            pointer-events: none;
+            transform: scale(0.98);
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* Aktuálna otvorená otázka */
+        .question.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1);
+        }
+
+        /* Už zodpovedané staršie otázky zostávajú viditeľné */
+        .question:has(~ .question.active) {
+            opacity: 0.7;
+            pointer-events: none; /* Zamkneme ich proti opätovnému prekliknutiu */
+            transform: scale(1);
+        }
+
+        /* V zodpovedaných otázkach utlmíme nevybraté tlačidlá */
+        .question:has(~ .question.active) button:not(.selected) {
+            opacity: 0.4;
+            border-color: #e0e0e0;
+            background: #f9f9f9;
+            color: #a0a0a0;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* --- ŠTÝLY PRE BUTTONY --- */
         button {
             padding: 16px;
             font-size: 16px;
@@ -127,14 +160,14 @@
             transition: transform 0.05s;
         }
 
-        /* Nový štýl pre vysvietený (vybratý) button */
+        /* JASNÉ VYSVIETENIE: Vybraté tlačidlo svieti na červeno */
         button.selected {
-            background: #ffebee !important;
-            border-color: #d32f2f !important;
-            color: #d32f2f !important;
+            background: #d32f2f !important;
+            border-color: #c62828 !important;
+            color: white !important;
             font-weight: 700 !important;
-            transform: translateX(4px);
-            box-shadow: inset 4px 0 0 #d32f2f, 0 4px 12px rgba(211, 47, 47, 0.15);
+            transform: translateX(8px) scale(1.01) !important;
+            box-shadow: 0 4px 14px rgba(211, 47, 47, 0.3) !important;
         }
 
         .primary-button {
@@ -255,6 +288,7 @@
 </head>
 <body>
     <div class="container">
+        <!-- START STAGE -->
         <div id="stage-start" class="stage active">
             <div class="header">
                 <span class="header-emoji">📚</span>
@@ -266,9 +300,11 @@
             <button class="primary-button" onclick="startQuiz()">Spustiť kvíz →</button>
         </div>
 
+        <!-- QUIZ STAGE -->
         <div id="stage-quiz" class="stage">
             <div class="progress-bar" id="progress-bar"></div>
             
+            <!-- Question 1 -->
             <div id="q1" class="question active">
                 <h2>Aká je tvoja nálada? 🎭</h2>
                 <div class="button-group">
@@ -279,6 +315,7 @@
                 </div>
             </div>
 
+            <!-- Question 2 -->
             <div id="q2" class="question">
                 <h2>Aký žáner preferuješ? 📖</h2>
                 <div class="button-group">
@@ -290,6 +327,7 @@
                 </div>
             </div>
 
+            <!-- Question 3 -->
             <div id="q3" class="question">
                 <h2>Ako dlhá má byť kniha? 📏</h2>
                 <div class="button-group">
@@ -298,6 +336,7 @@
                 </div>
             </div>
 
+            <!-- Question 4 -->
             <div id="q4" class="question">
                 <h2>Ako rýchlo čítaš? ⚡</h2>
                 <div class="button-group">
@@ -307,6 +346,7 @@
             </div>
         </div>
 
+        <!-- RESULTS STAGE -->
         <div id="stage-results" class="stage">
             <div class="results-header">
                 <div class="results-emoji">✨</div>
@@ -417,26 +457,29 @@
         function answer(field, value) {
             answers[field] = value;
             
-            // LOGIKA PRE VYSVIETENIE: Nájde kliknutý button a pridá mu triedu .selected
-            const clickedBtn = document.querySelector(`button[onclick="answer('${field}', '${value}')"]`);
-            if (clickedBtn) {
-                const siblings = clickedBtn.closest('.button-group').querySelectorAll('button');
-                siblings.forEach(btn => btn.classList.remove('selected'));
-                clickedBtn.classList.add('selected');
-            }
+            // BEZPEČNÉ VYBRATIE BUTTONU: Prehľadá dotazník a podsvieti kliknuté tlačidlo
+            document.querySelectorAll('#stage-quiz button').forEach(btn => {
+                const onclickAttr = btn.getAttribute('onclick') || '';
+                if (onclickAttr.includes(`'${field}'`) && onclickAttr.includes(`'${value}'`)) {
+                    const siblings = btn.closest('.button-group').querySelectorAll('button');
+                    siblings.forEach(s => s.classList.remove('selected'));
+                    btn.classList.add('selected');
+                }
+            });
 
             updateProgress();
             
             if (field === 'tempo') {
-                setTimeout(showResults, 300);
+                // Posledná otázka – chvíľu ju necháme svietiť a prejdeme na výsledky
+                setTimeout(showResults, 400);
             } else {
                 const questionIndex = { nalada: 1, zanr: 2, dlzka: 3, tempo: 4 }[field];
-                // Pridané malé oneskorenie prechodu, aby si používateľ stihol všimnúť vysvietenie tlačidla
+                // Plynulé odomknutie nasledujúcej otázky po 300ms
                 setTimeout(() => {
                     for (let i = 1; i <= 4; i++) {
                         document.getElementById(`q${i}`)?.classList.toggle('active', i === questionIndex + 1);
                     }
-                }, 200);
+                }, 300);
             }
         }
 
@@ -482,8 +525,8 @@
             answers.dlzka = null;
             answers.tempo = null;
             
-            // VYMAZANIE VYSVIETENIA: Resetuje vybraté štýly tlačidiel na pôvodné
-            document.querySelectorAll('.button-group button').forEach(btn => btn.classList.remove('selected'));
+            // RESET VYSVIETENIA: Vymaže vybraté triedy zo všetkých tlačidiel
+            document.querySelectorAll('#stage-quiz button').forEach(btn => btn.classList.remove('selected'));
             
             for (let i = 1; i <= 4; i++) {
                 document.getElementById(`q${i}`)?.classList.toggle('active', i === 1);
